@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "title": "Software Engineer",
+    "description": "Looking for a developer skilled in Python, Flask, and REST APIs."
+  },
+  {
+    "id": 2,
+    "title": "Data Scientist",
+    "description": "Experience with machine learning, pandas, NumPy, and deep learning preferred."
+  },
+  {
+    "id": 3,
+    "title": "Frontend Developer",
+    "description": "Strong skills in React, JavaScript, HTML, and CSS required."
+  }
+]
