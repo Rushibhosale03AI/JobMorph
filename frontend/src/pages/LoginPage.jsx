@@ -14,7 +14,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       alert('Login failed: ' + err.message);
     }

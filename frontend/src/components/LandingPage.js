@@ -15,32 +15,75 @@ const LandingPage = () => {
       if (user) {
         navigate('/dashboard');
       } else {
-        navigate('/login');
+        navigate('/signup');
       }
     });
   };
 
   return (
-    <div className="landing-container">
+    <div className="landing">
       <Navbar />
 
-      <main className="landing-main split-layout">
-        <div className="left-section">
-          <h2>Boost Your Job Hunt with AI</h2>
-          <p>
-            Upload your resume and job description to get instant skill match and missing skill suggestions.
+      {/* Decorative gradient blobs */}
+      <div className="bg-blob bg-blob--one" aria-hidden="true" />
+      <div className="bg-blob bg-blob--two" aria-hidden="true" />
+
+      <main className="landing__main split">
+        <section className="split__left">
+          <div className="eyebrow">AI • Careers • Growth</div>
+          <h1 className="hero__title" style={{ color: '#2a69d792' }}>
+            Boost your job hunt <span className="accent">with AI</span>
+          </h1>
+          <p className="hero__subtitle">
+            Upload your resume and a job description. Instantly see your match score, missing skills, and
+            tailored suggestions to improve your chances.
           </p>
-          <button onClick={handleGetStarted} className="start-btn">
-            Get Started
-          </button>
-        </div>
-        <div className="right-section">
-          <img src={resumeImg} alt="Resume Illustration" className="landing-image" />
-        </div>
+
+          <div className="cta__row">
+            <button
+              onClick={handleGetStarted}
+              className="btn btn--primary"
+              aria-label="Get started with AI resume analyzer"
+            >
+              Get Started
+            </button>
+
+            <button
+              className="btn btn--subtle"
+              onClick={() => navigate('/about')}
+              aria-label="Learn how the resume analyzer works"
+            >
+              How it works
+            </button>
+          </div>
+
+          <ul className="benefits" aria-label="Key benefits">
+            <li>Smart skill gap detection</li>
+            <li>Actionable suggestions</li>
+            <li>Private and secure</li>
+          </ul>
+        </section>
+
+        <section className="split__right">
+          <div className="image__frame" role="img" aria-label="Illustration of resume analysis">
+            <img
+              src={resumeImg}
+              alt="Illustration: AI analyzing resume vs job description"
+              className="hero__image"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </section>
       </main>
 
-      <footer className="landing-footer">
-        &copy; {new Date().getFullYear()} AI Resume Analyzer. All rights reserved.
+      <footer className="landing__footer">
+        <span>© {new Date().getFullYear()} AI Resume Analyzer</span>
+        <nav className="footer__links" aria-label="Footer">
+          <button className="linklike" onClick={() => navigate('/privacy')}>Privacy</button>
+          <button className="linklike" onClick={() => navigate('/terms')}>Terms</button>
+          <button className="linklike" onClick={() => navigate('/contact')}>Contact</button>
+        </nav>
       </footer>
     </div>
   );

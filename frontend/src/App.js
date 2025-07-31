@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import PrivateRoute from "./components/PrivateRoute";
 import DashboardPage from "./pages/DashboardPage";  
+import DashboardResultsPage from "./pages/DashboardResultsPage";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -22,7 +23,8 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
           <Route path="/result" element={<PrivateRoute><ResultPage /></PrivateRoute>} />
-          <Route path="/dashboard" element={<DashboardPage />} /> 
+          {/* <Route path="/dashboard" element={<DashboardPage />} />  */}
+          <Route path="/dashboard" element={<DashboardResultsPage />} />
         </Routes>
       </AuthProvider>
     </Router>

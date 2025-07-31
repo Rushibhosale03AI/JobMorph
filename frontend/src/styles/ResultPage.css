@@ -1,31 +1,166 @@
-.result-container {
-  max-width: 600px;
+/* src/styles/ResultPage.css */
+:root{
+  --bg: #0b0f17;
+  --card: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.12);
+  --text: #e8eefc;
+  --muted: #b3c1dd;
+  --accent: #7c5cff;
+  --accent-2: #1ec8a5;
+  --miss: #f44336;
+  --shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.wrapper {
+  max-width: 1080px;
   margin: 0 auto;
+  padding: clamp(16px, 3vw, 28px);
+  color: var(--text);
+}
+
+.result-empty {
+  max-width: 640px;
+  margin: 120px auto;
   text-align: center;
-  padding: 20px;
+  color: var(--text);
 }
 
-.chart-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 30px;
-  margin: 20px 0;
+.result__header h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(1.8rem, 3.6vw, 2.4rem);
+  font-weight: 800;
+}
+.muted { color: var(--muted); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(16px, 2.4vw, 24px);
+  box-shadow: var(--shadow);
+  margin-top: 16px;
+  backdrop-filter: blur(6px);
 }
 
-.missing-skills-section ul {
-  list-style-type: none;
+.grid {
+  display: grid;
+  gap: 16px;
+}
+.grid--split {
+  grid-template-columns: minmax(280px, 1fr) minmax(260px, 1fr);
+}
+.grid--two {
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+}
+
+@media (max-width: 880px){
+  .grid--split, .grid--two { grid-template-columns: 1fr; }
+}
+
+/* Chart card */
+.chart-card__inner {
+  display: grid;
+  place-items: center;
+}
+.chart-card__chart {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.chart-card__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.score-details h3 { margin: 0 0 6px; }
+.badges { display: flex; gap: 10px; margin: 12px 0 4px; }
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+}
+.badge--match { background: rgba(30,200,165,.12); color: #d9fff6; }
+.badge--miss { background: rgba(244,67,54,.12); color: #ffe0e0; }
+
+/* Lists */
+.list {
+  margin: 8px 0 0;
   padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--miss);
+}
+.dot--hint { background: var(--accent-2); }
+
+.empty {
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px;
 }
 
-.missing-skills-section li {
-  text-align: left;
-  margin: 5px 0;
+/* Resources */
+.resources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
+.resource {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; border-radius: 12px;
+  text-decoration: none;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: transform .12s ease, border-color .2s ease, background .2s ease;
+}
+.resource:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.25);
+  background: rgba(255,255,255,.07);
+}
+.resource__skill { font-weight: 700; }
+.resource__link { color: var(--accent-2); font-weight: 700; }
 
-button {
-  margin-top: 20px;
-  padding: 8px 16px;
-  font-size: 16px;
+/* Buttons (match UploadPage styles) */
+.btn {
+  appearance: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
   cursor: pointer;
+  font-weight: 700;
+  transition: transform .12s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+  color: var(--text);
+}
+.btn--primary {
+  background: linear-gradient(135deg, var(--accent) 0%, #6a4cff 100%);
+  box-shadow: 0 10px 30px rgba(124,92,255,.35);
+}
+.btn--primary:hover { transform: translateY(-1px); }
+.btn--ghost {
+  background: transparent;
+  border-color: var(--border);
 }
