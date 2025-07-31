@@ -1,0 +1,123 @@
+.landing-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+.landing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 20px 40px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.login-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-btn:hover {
+  background-color: #0056b3;
+}
+
+.landing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.landing-main h2 {
+  font-size: 36px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.landing-main p {
+  font-size: 18px;
+  color: #666;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+.start-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.start-btn:hover {
+  background-color: #218838;
+}
+
+.landing-footer {
+  background-color: #ffffff;
+  text-align: center;
+  padding: 16px;
+  font-size: 14px;
+  color: #888;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.05);
+}
+.split-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 80px;
+}
+
+.left-section {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.right-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-image {
+  max-width: 70%;
+  height: 40%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.start-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.start-btn:hover {
+  background-color: #0056b3;
+}
+
+

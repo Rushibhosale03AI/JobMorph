@@ -1,0 +1,31 @@
+.result-container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 20px;
+}
+
+.chart-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin: 20px 0;
+}
+
+.missing-skills-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.missing-skills-section li {
+  text-align: left;
+  margin: 5px 0;
+}
+
+button {
+  margin-top: 20px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
