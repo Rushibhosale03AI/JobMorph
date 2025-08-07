@@ -1,46 +1,49 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # <-- Add this
-from werkzeug.utils import secure_filename
-import os
-from resume_parser import parse_resume
-from job_matcher import match_jobs  
-from live_jobs_jsearch import fetch_jobs_from_jsearch
-
+from flask_cors import CORS
+import docx2txt
+import PyPDF2
 
 app = Flask(__name__)
-CORS(app)  # <-- Add this line
+CORS(app, supports_credentials=True)  # Enable CORS for frontend requests
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-@app.route("/jobs", methods=["GET"])
-def get_live_jobs():
-    keyword = request.args.get("keyword", "python developer")
-    jobs = fetch_jobs_from_jsearch(keyword)
-    return jsonify(jobs)
-@app.route("/upload", methods=["POST"])
-def upload_resume():
-    if 'resume' not in request.files:
-        return jsonify({"message": "No file part"}), 400
+def extract_text_from_pdf(file):
+    reader = PyPDF2.PdfReader(file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
 
-    file = request.files['resume']
-    if file.filename == '':
-        return jsonify({"message": "No selected file"}), 400
+def extract_text_from_docx(file):
+    return docx2txt.process(file)
 
-    filename = secure_filename(file.filename)
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)
+@app.route('/upload', methods=['POST'])
+def upload():
+    resume_text = ''
+    jd_text = ''
 
-    analysis = parse_resume(file_path)
- 
-    with open(file_path, 'rb') as f:
-        resume_text = f.read().decode(errors='ignore')
+    if 'resume' in request.files:
+        resume_file = request.files['resume']
+        if resume_file.filename.endswith('.pdf'):
+            resume_text = extract_text_from_pdf(resume_file)
+        elif resume_file.filename.endswith('.docx'):
+            resume_text = extract_text_from_docx(resume_file)
 
-    matched_jobs = match_jobs(resume_text)
+    if 'jd_file' in request.files:
+        jd_file = request.files['jd_file']
+        if jd_file.filename.endswith('.pdf'):
+            jd_text = extract_text_from_pdf(jd_file)
+        elif jd_file.filename.endswith('.docx'):
+            jd_text = extract_text_from_docx(jd_file)
+    elif 'jd_text' in request.form:
+        jd_text = request.form['jd_text']
+
+    print("✅ Resume Extracted Text:\n", resume_text[:300])
+    print("✅ JD Extracted Text:\n", jd_text[:300])
+
     return jsonify({
-        "message": "Resume uploaded and analyzed successfully",
-        "analysis": analysis,
-         "job_matches": matched_jobs
+        'resume': resume_text or 'No text found in resume.',
+        'job_description': jd_text or 'No job description provided.'
     })
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
