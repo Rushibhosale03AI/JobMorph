@@ -1,4 +1,4 @@
-// src/components/UploadPage.jsx (UPDATED)
+// src/components/UploadPage.jsx (Ready for Deployment)
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ function humanFile(f) {
 const UploadPage = () => {
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState(null);
-  const [jdFile, setJdFile] = useState(null); // 1. RE-ADD STATE for the JD file
+  const [jdFile, setJdFile] = useState(null);
   const [jdText, setJdText] = useState("");
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
@@ -45,21 +45,19 @@ const UploadPage = () => {
     setResumeFile(f);
   };
   
-  // 2. CREATE HANDLER for the JD file input
   const onJdFileChange = (e) => {
     const f = e.target.files?.[0];
     const msg = validateFile(f);
     if (msg) return setErrMsg(msg);
     setErrMsg("");
     setJdFile(f);
-    setJdText(""); // Clear text input if a file is chosen
+    setJdText("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrMsg("");
 
-    // 3. UPDATE LOGIC to check for either file or text
     if (!resumeFile) {
       return setErrMsg("Please upload your resume.");
     }
@@ -70,7 +68,6 @@ const UploadPage = () => {
     const formData = new FormData();
     formData.append("resume", resumeFile);
     
-    // Append either the file or the text, whichever is provided
     if (jdFile) {
       formData.append("jd_file", jdFile);
     } else {
@@ -81,7 +78,8 @@ const UploadPage = () => {
     setHint("Uploading and analyzing... this may take a moment.");
 
     try {
-      const res = await fetch("http://localhost:5000/analyze", {
+      // THIS IS THE CORRECTED LINE FOR DEPLOYMENT
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/analyze`, {
         method: "POST",
         body: formData,
       });
@@ -131,50 +129,47 @@ const UploadPage = () => {
                         <span className="dropzone-hint">{ACCEPTED.join(" / ")} up to {MAX_SIZE_MB}MB</span>
                     </div>
                 </div>
-               {/* --- Job Description Card (Updated) --- */}
-<div className="upload-card">
-    <label className="field-label">2. Job Description <span className="req">*</span></label>
-    
-    {/* This dropzone will be disabled if text is entered below */}
-    <div 
-        className={`dropzone ${jdText ? 'is-disabled' : ''}`} 
-        onClick={jdText ? undefined : () => document.getElementById('jd-file-input').click()}
-    >
-        <input 
-            type="file" 
-            id="jd-file-input" 
-            hidden 
-            onChange={onJdFileChange} 
-            accept={ACCEPTED.join(",")} 
-            disabled={!!jdText} // Also disable the input itself
-        />
-        <p>{jdFile ? humanFile(jdFile) : (jdText ? 'Using text pasted below' : 'Click to upload a file')}</p>
-        <span className="dropzone-hint">(Optional) Upload a PDF, DOCX, or TXT file</span>
-    </div>
+                {/* --- Job Description Card --- */}
+                <div className="upload-card">
+                    <label className="field-label">2. Job Description <span className="req">*</span></label>
+                    <div 
+                        className={`dropzone ${jdText ? 'is-disabled' : ''}`} 
+                        onClick={jdText ? undefined : () => document.getElementById('jd-file-input').click()}
+                    >
+                        <input 
+                            type="file" 
+                            id="jd-file-input" 
+                            hidden 
+                            onChange={onJdFileChange} 
+                            accept={ACCEPTED.join(",")} 
+                            disabled={!!jdText}
+                        />
+                        <p>{jdFile ? humanFile(jdFile) : (jdText ? 'Using text pasted below' : 'Click to upload a file')}</p>
+                        <span className="dropzone-hint">(Optional) Upload a PDF, DOCX, or TXT file</span>
+                    </div>
 
-    <div className="or-separator">OR</div>
+                    <div className="or-separator">OR</div>
 
-    <textarea
-        id="jd-text"
-        className="textarea"
-        rows={8}
-        // Placeholder text changes based on whether a file is selected
-        placeholder={jdFile ? "Job description file is selected." : "Paste the full job description here..."}
-        value={jdText}
-        onChange={(e) => {
-            setJdText(e.target.value);
-            setJdFile(null); // Clear file input if text is entered
-        }}
-        // Textarea is disabled if a file is uploaded
-        disabled={!!jdFile}
-    />
-</div>
-</div>
+                    <textarea
+                        id="jd-text"
+                        className="textarea"
+                        rows={8}
+                        placeholder={jdFile ? "Job description file is selected." : "Paste the full job description here..."}
+                        value={jdText}
+                        onChange={(e) => {
+                            setJdText(e.target.value);
+                            setJdFile(null);
+                        }}
+                        disabled={!!jdFile}
+                    />
+                </div>
+            </div>
             
-            {errMsg && <div className="alert alert--error">{errMsg}</div>}
-            {hint && !errMsg && <div className="alert alert--hint">{hint}</div>}
-
             <div className="actions-bar">
+                <div>
+                    {errMsg && <div className="alert alert--error">{errMsg}</div>}
+                    {hint && !errMsg && <div className="alert alert--hint">{hint}</div>}
+                </div>
                 <button type="submit" className="btn btn--primary" disabled={loading}>
                     {loading ? "Analyzing…" : "Analyze Now"}
                 </button>
