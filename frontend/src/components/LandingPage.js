@@ -5,7 +5,7 @@ import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '../components/Navbar';
 import '../styles/LandingPage.css';
-import resumeImg from '../assests/Gemini_Generated_Image_88p6oc88p6oc88p6.png';
+import Footer from '../components/Footer';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const LandingPage = () => {
         <section className="split__right">
           <div className="image__frame" role="img" aria-label="Illustration of resume analysis">
             <img
-              src={resumeImg}
+              src={"/assests/Gemini_Generated_Image_88p6oc88p6oc88p6.png"}
               alt="Illustration: AI analyzing resume vs job description"
               className="hero__image"
               loading="lazy"
@@ -77,14 +77,7 @@ const LandingPage = () => {
         </section>
       </main>
 
-      <footer className="landing__footer">
-        <span>© {new Date().getFullYear()} AI Resume Analyzer</span>
-        <nav className="footer__links" aria-label="Footer">
-          <button className="linklike" onClick={() => navigate('/privacy')}>Privacy</button>
-          <button className="linklike" onClick={() => navigate('/terms')}>Terms</button>
-          <button className="linklike" onClick={() => navigate('/contact')}>Contact</button>
-        </nav>
-      </footer>
+      <Footer/>
     </div>
   );
 };

@@ -1,19 +1,13 @@
-// src/components/UploadPage.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+// src/components/UploadPage.jsx (UPDATED)
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/UploadPage.css";
 import { auth, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-import {
-  initializeModel,
-  analyzeWithGemini,
-  parseGeminiResponse,
-  getLearningResourcesFromGemini,
-} from "../components/geminiService"; // 
-
-const MAX_SIZE_MB = 8; // limit large PDFs/DOCX
-const ACCEPTED = [".pdf", ".docx"]; // (we ignore .doc because parsing is unreliable)
+const MAX_SIZE_MB = 8;
+const ACCEPTED = [".pdf", ".docx", ".txt"];
 
 function humanFile(f) {
   if (!f) return "";
@@ -23,26 +17,13 @@ function humanFile(f) {
 
 const UploadPage = () => {
   const navigate = useNavigate();
-
-  // form state
   const [resumeFile, setResumeFile] = useState(null);
-  const [jdFile, setJdFile] = useState(null);
+  const [jdFile, setJdFile] = useState(null); // 1. RE-ADD STATE for the JD file
   const [jdText, setJdText] = useState("");
-
-  // ui state
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const [hint, setHint] = useState("");
 
-  const dropRefResume = useRef(null);
-  const dropRefJD = useRef(null);
-
-  useEffect(() => {
-    // warm the model on first visit
-    initializeModel().catch(() => {});
-  }, []);
-
-  // ----- validators -----
   const validateFile = (file) => {
     if (!file) return "No file selected.";
     const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
@@ -55,8 +36,7 @@ const UploadPage = () => {
     }
     return "";
   };
-
-  // ----- file handlers -----
+  
   const onResumeChange = (e) => {
     const f = e.target.files?.[0];
     const msg = validateFile(f);
@@ -64,115 +44,66 @@ const UploadPage = () => {
     setErrMsg("");
     setResumeFile(f);
   };
-
-  const onJDFileChange = (e) => {
+  
+  // 2. CREATE HANDLER for the JD file input
+  const onJdFileChange = (e) => {
     const f = e.target.files?.[0];
     const msg = validateFile(f);
     if (msg) return setErrMsg(msg);
     setErrMsg("");
     setJdFile(f);
+    setJdText(""); // Clear text input if a file is chosen
   };
 
-  // drag & drop helpers
-  const makeDnd = (setter) => (ev) => {
-    ev.preventDefault();
-    if (ev.type === "dragenter" || ev.type === "dragover") return;
-    const f = ev.dataTransfer.files?.[0];
-    const msg = validateFile(f);
-    if (msg) return setErrMsg(msg);
-    setErrMsg("");
-    setter(f);
-  };
-
-  // ----- submit -----
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrMsg("");
 
+    // 3. UPDATE LOGIC to check for either file or text
     if (!resumeFile) {
-      setErrMsg("Please upload your resume (.pdf or .docx).");
-      return;
+      return setErrMsg("Please upload your resume.");
     }
     if (!jdFile && jdText.trim() === "") {
-      setErrMsg("Upload a JD file or paste the JD text.");
-      return;
+      return setErrMsg("Please upload a Job Description file or paste the text.");
     }
 
-    // build form
     const formData = new FormData();
     formData.append("resume", resumeFile);
-    if (jdFile) formData.append("jd_file", jdFile);
-    if (jdText.trim()) formData.append("jd_text", jdText.trim());
+    
+    // Append either the file or the text, whichever is provided
+    if (jdFile) {
+      formData.append("jd_file", jdFile);
+    } else {
+      formData.append("jd_text", jdText.trim());
+    }
 
     setLoading(true);
-    setHint("Extracting text…");
+    setHint("Uploading and analyzing... this may take a moment.");
 
     try {
-      // 1) extract text via Flask
-      const res = await fetch("http://localhost:5000/upload", {
+      const res = await fetch("http://localhost:5000/analyze", {
         method: "POST",
         body: formData,
       });
+
       if (!res.ok) {
-        throw new Error(`Upload failed (${res.status})`);
-      }
-      const data = await res.json();
-      const resumeText = data.resume || "";
-      const jdFullText = data.job_description || "";
-
-      if (!resumeText.trim()) {
-        throw new Error("Could not extract text from resume.");
-      }
-      if (!jdFullText.trim()) {
-        throw new Error("Could not extract/paste JD text.");
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Analysis failed (${res.status})`);
       }
 
-      // 2) LLM analysis
-      setHint("Analyzing with Gemini…");
-      const llm = await analyzeWithGemini(resumeText, jdFullText);
-      const parsed = parseGeminiResponse(llm);
-      if (!parsed) throw new Error("Failed to parse Gemini output.");
+      const analysisResult = await res.json();
 
-      // 3) optional learning resources
-      setHint("Finding learning resources…");
-      const learningResources = await getLearningResourcesFromGemini(
-        parsed.missing_keywords || []
-      );
-
-      // 4) persist for signed-in users
       const user = auth.currentUser;
       if (user) {
-        const resultRef = doc(
-          db,
-          "users",
-          user.uid,
-          "results",
-          new Date().toISOString()
-        );
+        const resultRef = doc(db, "users", user.uid, "results", new Date().toISOString());
         await setDoc(resultRef, {
-          resume: resumeText,
-          job_description: jdFullText,
-          match_percentage: parsed.score,
-          missing_skills: parsed.missing_keywords,
-          suggestions: parsed.suggestions,
-          learning_resources: learningResources,
-          created_at: new Date(),
+          ...analysisResult,
+          created_at: serverTimestamp(),
         });
       }
 
-      // 5) route to result
-      navigate("/dashboard", {
-        state: {
-          result: {
-            resume: resumeText,
-            job_description: jdFullText,
-            match_percentage: parsed.score,
-            missing_keywords: parsed.missing_keywords,
-            suggestions: parsed.suggestions,
-            learning_resources: learningResources,
-          },
-        },
-      });
+      navigate("/dashboard/history", { state: { result: analysisResult } });
+
     } catch (err) {
       console.error("❌ Analysis error:", err);
       setErrMsg(err.message || "Something went wrong. Try again.");
@@ -182,116 +113,73 @@ const UploadPage = () => {
     }
   };
 
-  const resumeHelp = useMemo(
-    () => (resumeFile ? humanFile(resumeFile) : "Drop or select .pdf / .docx"),
-    [resumeFile]
-  );
-  const jdHelp = useMemo(
-    () =>
-      jdFile
-        ? humanFile(jdFile)
-        : "Drop a JD file (.pdf/.docx) or paste the JD below",
-    [jdFile]
-  );
-
   return (
-    <div className="upload">
-      <header className="upload__header">
-        <h1>Resume & JD Analyzer</h1>
-        <p className="muted">
-          Upload your resume and a job description. We’ll compute your match
-          score and list missing skills.
-        </p>
-      </header>
-
-      <form className="card upload__form" onSubmit={handleSubmit} noValidate>
-        {/* Resume dropzone */}
-        <label className="field__label">Resume (PDF/DOCX) <span className="req">*</span></label>
-        <div
-          className={`dropzone ${resumeFile ? "dropzone--filled" : ""}`}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={makeDnd(setResumeFile)}
-          ref={dropRefResume}
-        >
-          <input
-            type="file"
-            accept=".pdf,.docx"
-            id="resume-input"
-            onChange={onResumeChange}
-            hidden
-          />
-          <p className="dropzone__hint">{resumeHelp}</p>
-          <div className="dropzone__actions">
-            <label htmlFor="resume-input" className="btn btn--ghost">
-              Choose file
-            </label>
-            {resumeFile && (
-              <button
-                type="button"
-                className="btn btn--text"
-                onClick={() => setResumeFile(null)}
-              >
-                Remove
-              </button>
-            )}
-          </div>
+    <div className="upload-page-container">
+        <div className="upload-header">
+            <h1>New Analysis</h1>
+            <p className="subtitle">Provide your resume and a job description to get started.</p>
         </div>
 
-        {/* JD file dropzone */}
-        <label className="field__label">Job Description File (optional)</label>
-        <div
-          className={`dropzone ${jdFile ? "dropzone--filled" : ""}`}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={makeDnd(setJdFile)}
-          ref={dropRefJD}
-        >
-          <input
-            type="file"
-            accept=".pdf,.docx"
-            id="jd-input"
-            onChange={onJDFileChange}
-            hidden
-          />
-          <p className="dropzone__hint">{jdHelp}</p>
-          <div className="dropzone__actions">
-            <label htmlFor="jd-input" className="btn btn--ghost">
-              Choose file
-            </label>
-            {jdFile && (
-              <button
-                type="button"
-                className="btn btn--text"
-                onClick={() => setJdFile(null)}
-              >
-                Remove
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* JD textarea */}
-        <label className="field__label">Or paste Job Description</label>
-        <textarea
-          className="textarea"
-          rows={8}
-          placeholder="Paste the job description here..."
-          value={jdText}
-          onChange={(e) => setJdText(e.target.value)}
+        <form className="upload-form" onSubmit={handleSubmit} noValidate>
+            <div className="upload-grid">
+                {/* --- Resume Card --- */}
+                <div className="upload-card">
+                    <label className="field-label">1. Your Resume <span className="req">*</span></label>
+                    <div className="dropzone" onClick={() => document.getElementById('resume-input').click()}>
+                        <input type="file" id="resume-input" hidden onChange={onResumeChange} accept={ACCEPTED.join(",")} />
+                        <p>{resumeFile ? humanFile(resumeFile) : "Click to upload a file"}</p>
+                        <span className="dropzone-hint">{ACCEPTED.join(" / ")} up to {MAX_SIZE_MB}MB</span>
+                    </div>
+                </div>
+               {/* --- Job Description Card (Updated) --- */}
+<div className="upload-card">
+    <label className="field-label">2. Job Description <span className="req">*</span></label>
+    
+    {/* This dropzone will be disabled if text is entered below */}
+    <div 
+        className={`dropzone ${jdText ? 'is-disabled' : ''}`} 
+        onClick={jdText ? undefined : () => document.getElementById('jd-file-input').click()}
+    >
+        <input 
+            type="file" 
+            id="jd-file-input" 
+            hidden 
+            onChange={onJdFileChange} 
+            accept={ACCEPTED.join(",")} 
+            disabled={!!jdText} // Also disable the input itself
         />
+        <p>{jdFile ? humanFile(jdFile) : (jdText ? 'Using text pasted below' : 'Click to upload a file')}</p>
+        <span className="dropzone-hint">(Optional) Upload a PDF, DOCX, or TXT file</span>
+    </div>
 
-        {errMsg && <div className="alert alert--error">⚠ {errMsg}</div>}
-        {hint && !errMsg && <div className="alert alert--hint">{hint}</div>}
+    <div className="or-separator">OR</div>
 
-        <div className="actions">
-          <button className="btn btn--primary" type="submit" disabled={loading}>
-            {loading ? "Analyzing…" : "Analyze"}
-          </button>
-        </div>
+    <textarea
+        id="jd-text"
+        className="textarea"
+        rows={8}
+        // Placeholder text changes based on whether a file is selected
+        placeholder={jdFile ? "Job description file is selected." : "Paste the full job description here..."}
+        value={jdText}
+        onChange={(e) => {
+            setJdText(e.target.value);
+            setJdFile(null); // Clear file input if text is entered
+        }}
+        // Textarea is disabled if a file is uploaded
+        disabled={!!jdFile}
+    />
+</div>
+</div>
+            
+            {errMsg && <div className="alert alert--error">{errMsg}</div>}
+            {hint && !errMsg && <div className="alert alert--hint">{hint}</div>}
 
-        <p className="micro muted">
-          Max file size {MAX_SIZE_MB}MB. Supported: {ACCEPTED.join(", ")}.
-        </p>
-      </form>
+            <div className="actions-bar">
+                <button type="submit" className="btn btn--primary" disabled={loading}>
+                    {loading ? "Analyzing…" : "Analyze Now"}
+                </button>
+            </div>
+        </form>
     </div>
   );
 };

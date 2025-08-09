@@ -133,7 +133,7 @@ export function parseGeminiResponse(responseText) {
     console.error("❌ Parse error:", e);
     return null;
   }
-}
+} 
 
 
 // ✅ Step 5: Learning resources for missing skills

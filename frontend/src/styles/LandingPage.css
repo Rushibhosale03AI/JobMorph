@@ -250,3 +250,14 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+.btn--subtle {
+  background-color: #d972f8;  /* A very light gray background */
+  color: #64748b;             /* Muted gray text */
+  border-color: #e2e8f0;      /* A subtle border */
+}
+
+/* Hover effect for the subtle button */
+.btn--subtle:hover {
+  background-color: #e2e8f0;  /* A slightly darker gray background */
+  color: #1e293b;             /* Darker text for contrast */
+}

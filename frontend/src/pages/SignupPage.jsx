@@ -1,71 +1,137 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { auth } from '../firebase';
-import '../styles/Auth.css';
+import { FcGoogle } from 'react-icons/fc'; // For the Google logo
+import '../styles/Auth.css'; // Uses the same professional CSS file
+import { IoArrowBack } from 'react-icons/io5'; // NEW: Import the back arrow icon
+
 
 const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const provider = new GoogleAuthProvider();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
+    setLoading(true);
+
+    // 1. Check if passwords match
     if (password !== confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match!');
+      setLoading(false);
       return;
     }
 
+    // 2. Try to create the user
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate('/dashboard'); // Navigate to a protected route on success
     } catch (err) {
-      alert('Signup failed: ' + err.message);
+      // Provide a more user-friendly error message
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email address is already in use.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password should be at least 6 characters.');
+      } else {
+        setError('Failed to create an account. Please try again.');
+      }
     }
+    setLoading(false);
   };
 
   const handleGoogleSignup = async () => {
+    setError('');
+    setLoading(true);
     try {
       await signInWithPopup(auth, provider);
-      navigate('/');
+      navigate('/dashboard'); // Navigate to a protected route on success
     } catch (err) {
-      alert('Google signup failed: ' + err.message);
+      setError('Failed to sign up with Google. Please try again.');
     }
+    setLoading(false);
   };
 
   return (
     <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSignup}>
-        <h2>Create Your JobMorph Account</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-        <button type="submit" className="auth-button">Sign Up</button>
-        <div className="separator">or</div>
-        <button type="button" className="google-button" onClick={handleGoogleSignup}>
-          Sign up with Google
+      <div className="auth-card">
+      <button
+          onClick={() => navigate('/')}
+          className="back-button"
+          aria-label="Go back to landing page"
+        >
+          <IoArrowBack />
         </button>
-        <p className="auth-footer">
-          Already have an account? <a href="/login">Log in here</a>
-        </p>
-      </form>
+        <form className="auth-form" onSubmit={handleSignup}>
+          <h2>Create an Account</h2>
+          <p className="auth-subtitle">Start your journey with JobMorph today.</p>
+
+          {error && <p className="error-message">{error}</p>}
+
+          <div className="input-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="•••••••• (min. 6 characters)"
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Sign Up'}
+          </button>
+
+          <div className="separator">
+            <span>or</span>
+          </div>
+
+          <button
+            type="button"
+            className="google-button"
+            onClick={handleGoogleSignup}
+            disabled={loading}
+          >
+            <FcGoogle size={22} />
+            <span>Sign up with Google</span>
+          </button>
+
+          <p className="auth-footer">
+            Already have an account? <Link to="/login">Log in here</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
