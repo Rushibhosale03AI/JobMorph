@@ -13,7 +13,7 @@ from gemini_service import (
 )
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(app, origins=["http://localhost:3000", "https://jobmorph-app.vercel.app"], supports_credentials=True)
 
 # --- Text Extraction Functions (No changes needed here) ---
 def extract_text_from_pdf(file):
