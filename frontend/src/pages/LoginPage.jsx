@@ -56,6 +56,15 @@ const LoginPage = () => {
   // ... (handleGoogleLogin remains the same)
   const handleGoogleLogin = async () => {
     /* ... */
+    setError('');
+        setLoading(true);
+        try {
+          await signInWithPopup(auth, provider);
+          navigate('/dashboard'); // Navigate to a protected route on success
+        } catch (err) {
+          setError('Failed to sign up with Google. Please try again.');
+        }
+        setLoading(false);
   };
 
   return (

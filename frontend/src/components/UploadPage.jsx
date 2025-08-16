@@ -78,11 +78,10 @@ const UploadPage = () => {
     setHint("Uploading and analyzing... this may take a moment.");
 
     try {
-      // THIS IS THE CORRECTED LINE FOR DEPLOYMENT
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/analyze`, {
-        method: "POST",
-        body: formData,
-      });
+     const res = await fetch("http://localhost:5000/analyze", {
+  method: "POST",
+  body: formData,
+});
 
       if (!res.ok) {
         const errorData = await res.json();

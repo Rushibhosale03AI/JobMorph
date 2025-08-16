@@ -148,8 +148,43 @@
 
 
 /* --- Responsive Adjustments --- */
-@media (max-width: 1024px) {
+/* --- Responsive Adjustments --- */
+@media (max-width: 1280px) { /* UPDATED FOR SMALLER LAPTOPS */
   .dashboard-columns {
     grid-template-columns: 1fr; /* Stack columns on smaller screens */
+  }
+}
+/* --- Responsive Adjustments for Mobile Phones --- */
+@media (max-width: 768px) {
+  /* Reduce overall padding for more content space */
+  .main-dashboard-container {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Scale down the main title and stat card numbers */
+  .main-dashboard-title,
+  .stat-card-info p {
+    font-size: 1.75rem;
+  }
+  
+  .main-dashboard-subtitle {
+    font-size: 1rem;
+  }
+
+  /* Stack the summary cards vertically and center them */
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  /* Reduce padding inside the chart and activity cards */
+  .dashboard-card {
+    padding: 1rem;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 1.125rem;
   }
 }

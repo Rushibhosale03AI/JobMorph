@@ -87,7 +87,7 @@ const MainDashboardPage = () => {
                 <li key={item.id} onClick={() => navigate('/dashboard/history')}>
                   <div className="recent-item-info">
                     <span>Analysis from {new Date(item.created_at.seconds * 1000).toLocaleDateString()}</span>
-<span className="recent-item-score">{Math.round(item.match_percentage ?? item.score ?? 0)}%</span>                  </div>
+                    <span className="recent-item-score">{Math.round(item.match_percentage ?? item.score ?? 0)}%</span>                  </div>
                   <FaArrowRight className="recent-item-arrow" />
                 </li>
               ))

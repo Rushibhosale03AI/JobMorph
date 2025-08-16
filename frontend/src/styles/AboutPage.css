@@ -92,3 +92,36 @@
   font-size: 1rem;
   font-weight: 500;
 }
+/* --- Responsive Adjustments for Mobile --- */
+@media (max-width: 768px) {
+  /* Reduce overall padding on smaller screens */
+  .about-main-content {
+    padding: 2rem 1rem;
+  }
+
+  /* Make section spacing more compact */
+  .about-hero,
+  .our-values,
+  .cta-section {
+    padding: 2.5rem 0;
+  }
+
+  /* Scale down the main headings for better readability */
+  .about-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .our-values h2,
+  .cta-section h2 {
+    font-size: 1.75rem;
+  }
+
+  .about-hero .subtitle {
+      font-size: 1.125rem;
+  }
+
+  /* Adjust padding inside the values section */
+  .our-values {
+      padding: 2.5rem 1.5rem;
+  }
+}
